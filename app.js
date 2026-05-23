@@ -283,6 +283,10 @@ async function checkUrlForSession() {
     let sessionId = urlParams.get("session");
     
     if (sessionId && state.supabase) {
+        // Show join screen immediately to avoid user confusion during network delay
+        showScreen("screen-join");
+        document.getElementById("join-invite-text").innerHTML = "جاري تحميل بيانات الأوردر...";
+        
         // Clean the session ID in case of trailing slashes from chat apps
         sessionId = sessionId.replace(/[^a-zA-Z0-9-]/g, "");
         
@@ -304,12 +308,11 @@ async function loadSharedSession(sessionId) {
             
         if (error || !data) {
             console.error("Session not found", error);
+            document.getElementById("join-invite-text").innerHTML = `<span style="color:red">خطأ: لا يمكن العثور على الأوردر. قد يكون محذوفاً.</span>`;
             showAlertModal(
                 state.currentLanguage === "ar" ? "جلسة غير موجودة" : "Session Expired",
                 state.currentLanguage === "ar" ? "عذراً، أوردر الفطار هذا غير موجود أو تم حذفه." : "Sorry, this breakfast order session was not found."
             );
-            window.history.replaceState({}, document.title, window.location.pathname);
-            showScreen("screen-setup");
             return;
         }
         
@@ -339,6 +342,7 @@ async function loadSharedSession(sessionId) {
         }
     } catch (err) {
         console.error("Error loading session:", err);
+        document.getElementById("join-invite-text").innerHTML = `<span style="color:red">خطأ في الاتصال: ${err.message}</span>`;
         showAlertModal(
             state.currentLanguage === "ar" ? "خطأ في الجلسة" : "Session Error",
             err.message
