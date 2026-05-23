@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اطلبلي - Otlobly | منسق الفطار اللحظي</title>
+    
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS File -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Floating Ambient Background Orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        
+        <!-- App Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <i class="fa-solid fa-utensils logo-icon"></i>
+                <div class="logo-text">
+                    <span class="logo-title" data-tr="app-title">اطلبلي</span>
+                    <span class="logo-tagline" data-tr="app-tagline">منسق الفطار الذكي في العمل</span>
+                </div>
+            </div>
+            
+            <div class="header-controls">
+                <!-- Language Switcher -->
+                <button id="lang-switch" class="btn-icon" title="Switch Language">
+                    <i class="fa-solid fa-language"></i>
+                    <span class="lang-label">EN</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic Content Body -->
+        <main class="app-main">
+            
+
+
+            <!-- SECTION 2: Setup Session Form (Host View) -->
+            <section id="screen-setup" class="card fade-in active-screen">
+                <div class="card-header">
+                    <h2 data-tr="setup-title"><i class="fa-solid fa-mug-hot"></i> افتح أوردر فطار جديد</h2>
+                    <p data-tr="setup-subtitle">ابدأ جلسة فطار اليوم ودع زملائك يضيفون طلباتهم بأنفسهم!</p>
+                </div>
+                <div class="card-body">
+                    <form id="setup-form" onsubmit="handleCreateSession(event)">
+                        <div class="form-group">
+                            <label for="host-name" data-tr="label-host-name">اسمك (المنسّق):</label>
+                            <input type="text" id="host-name" class="form-control" required placeholder="مثال: أحمد، سارة...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="restaurant-select" data-tr="label-restaurant">المطعم:</label>
+                            <div class="restaurant-badge-input">
+                                <i class="fa-solid fa-store"></i>
+                                <span class="restaurant-name-fixed">ويشا (Wisha)</span>
+                            </div>
+                            <span class="input-note" data-tr="restaurant-note">* الأدمن فقط يحدد المطعم. حالياً تم ضبط "ويشا" كخيار افتراضي.</span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="delivery-fee" data-tr="label-delivery">تكلفة التوصيل (ج.م):</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="delivery-fee" class="form-control" min="0" value="30" required>
+                                <span class="input-suffix">EGP</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btn-create-session" class="btn btn-accent btn-block">
+                            <span data-tr="btn-open-order">فتح الأوردر وبدء الاستقبال 🚀</span>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- SECTION 3: Coworker Entry Screen (Join View) -->
+            <section id="screen-join" class="card fade-in">
+                <div class="card-header text-center">
+                    <i class="fa-solid fa-bell-concierge welcome-icon"></i>
+                    <h2 data-tr="join-title">طلب فطار مفتوح! 🎉</h2>
+                    <p id="join-invite-text">دعاك أحمد للمشاركة في أوردر فطار من مطعم ويشا.</p>
+                </div>
+                <div class="card-body">
+                    <form id="join-form" onsubmit="handleJoinSession(event)">
+                        <div class="form-group">
+                            <label for="coworker-name" data-tr="label-your-name">اكتب اسمك للمشاركة معهم:</label>
+                            <input type="text" id="coworker-name" class="form-control" required placeholder="مثال: عمر، نادين...">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <span data-tr="btn-join">معاكم 🙋‍♂️</span>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- SECTION 4: Interactive Ordering Menu (Coworker Cart View) -->
+            <section id="screen-menu" class="card fade-in">
+                <div class="card-header menu-header">
+                    <div>
+                        <span class="badge-active" data-tr="session-active-badge">جاري الطلب...</span>
+                        <h2 id="menu-restaurant-title">مطعم ويشا - قائمة الطعام</h2>
+                    </div>
+                    <div class="coworker-identity">
+                        <i class="fa-solid fa-user"></i>
+                        <span id="display-coworker-name">عمر</span>
+                    </div>
+                </div>
+                
+                <div class="card-body menu-grid-layout">
+                    <!-- Right/Main: Menu Items -->
+                    <div class="menu-section">
+                        <h3 class="section-title" data-tr="menu-select-items">اضغط على الأصناف لإضافتها لطلبك:</h3>
+                        <div class="items-grid" id="menu-items-container">
+                            <!-- Items will be generated dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- Left: Real-time Cart and Summary -->
+                    <div class="cart-section">
+                        <h3 class="section-title" data-tr="cart-title"><i class="fa-solid fa-basket-shopping"></i> طلباتك الحالية</h3>
+                        <div class="cart-list" id="cart-list">
+                            <!-- Cart elements -->
+                        </div>
+                        
+                        <div class="cart-total-area">
+                            <div class="cart-row">
+                                <span data-tr="cart-subtotal">إجمالي الأصناف:</span>
+                                <span class="cart-val" id="cart-total-val">0 EGP</span>
+                            </div>
+                            <div class="cart-row delivery-row">
+                                <span data-tr="cart-delivery-note">التوصيل (مقسم بالعد):</span>
+                                <span class="cart-val-small" id="cart-delivery-split-estimated">قيد الحساب...</span>
+                            </div>
+                        </div>
+
+                        <button id="btn-finish-order" class="btn btn-accent btn-block" onclick="handleFinishOrder()">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span data-tr="btn-finish">خلصت الأوردر بتاعي ✅</span>
+                        </button>
+                        
+                        <div class="waiting-indicator text-center" id="menu-waiting-status" style="display:none;">
+                            <div class="spinner"></div>
+                            <p data-tr="waiting-host-msg">تم حفظ طلبك! في انتظار المنسق ليقفل الأوردر ويحسب الحساب...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 5: Host Active Dashboard (Real-time tracking of entries) -->
+            <section id="screen-host-dashboard" class="card fade-in">
+                <div class="card-header dashboard-header">
+                    <div>
+                        <span class="badge-active" data-tr="session-active-badge">جاري الطلب...</span>
+                        <h2><i class="fa-solid fa-tv"></i> لوحة متابعة الطلبات اللحظية</h2>
+                    </div>
+                    <div class="share-area">
+                        <button class="btn btn-sm btn-primary" onclick="openHostMenu()" style="margin-bottom: 8px; width: 100%;">
+                            <i class="fa-solid fa-utensils"></i> <span data-tr="btn-host-order">أضف طلبي الشخصي</span>
+                        </button>
+                        <br>
+                        <button class="btn btn-sm btn-secondary" onclick="copyShareLink()" style="width: 100%;">
+                            <i class="fa-solid fa-share-nodes"></i> <span data-tr="btn-copy-link">نسخ رابط المشاركة للزملاء</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-body dashboard-grid-layout">
+                    <!-- Left Panel: Coworkers Status Tracker -->
+                    <div class="status-tracker">
+                        <h3 class="section-title" data-tr="coworkers-status-title">حالة الزملاء المشتركين</h3>
+                        <div class="coworker-list" id="host-coworkers-list">
+                            <!-- Dynamic list of coworkers and status -->
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: Aggregation Summary (Real-time preview) -->
+                    <div class="order-preview-panel">
+                        <h3 class="section-title" data-tr="live-aggregation-title">تجميع الأوردر اللحظي</h3>
+                        <div class="aggregated-list-preview" id="host-aggregated-preview">
+                            <!-- Dynamic grouped items list -->
+                        </div>
+                        
+                        <div class="dashboard-action-area">
+                            <button class="btn btn-danger btn-block btn-lg" onclick="handleCloseSession()">
+                                <i class="fa-solid fa-lock"></i>
+                                <span data-tr="btn-close-order">قفل الأوردر وحساب التوصيل 🔒</span>
+                            </button>
+                            <p class="dashboard-action-note" data-tr="close-action-note">* بالضغط على الزر، سيتم غلق الاستقبال وتوجيه الجميع فوراً لصفحة الحساب التفصيلية.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 6: Coworker Receipt Screen (Closed View for Coworker) -->
+            <section id="screen-coworker-receipt" class="card fade-in">
+                <div class="card-header text-center receipt-header">
+                    <div class="success-icon"><i class="fa-solid fa-receipt"></i></div>
+                    <h2 data-tr="receipt-title">أحمد قفل الأوردر! 🔒</h2>
+                    <p data-tr="receipt-subtitle">إليك ملخص طلبك وقيمة حسابك شاملة مصاريف التوصيل:</p>
+                </div>
+                <div class="card-body max-w-600">
+                    <div class="receipt-card">
+                        <div class="receipt-item-list" id="coworker-receipt-items">
+                            <!-- Dynamic item breakdown -->
+                        </div>
+                        
+                        <div class="receipt-math">
+                            <div class="math-row">
+                                <span data-tr="cart-subtotal">إجمالي الأصناف:</span>
+                                <span id="receipt-subtotal-val">0 EGP</span>
+                            </div>
+                            <div class="math-row">
+                                <span data-tr="receipt-delivery-share">نصيبك من التوصيل (موزع بالعد):</span>
+                                <span id="receipt-delivery-val">0 EGP</span>
+                            </div>
+                            <div class="math-row total-row">
+                                <span data-tr="receipt-total-due">المبلغ الإجمالي المطلوب منك:</span>
+                                <span class="highlight-val" id="receipt-total-val">0 EGP</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="payment-instructions-card">
+                        <h4 data-tr="how-to-pay"><i class="fa-solid fa-credit-card"></i> كيف تدفع للمنسق؟</h4>
+                        <p id="payment-host-details">يرجى دفع الحساب للمنسق (أحمد) نقداً أو عبر الهاتف / إنستاباي.</p>
+                    </div>
+
+                    <button class="btn btn-secondary btn-block" onclick="resetApp()">
+                        <i class="fa-solid fa-house"></i> <span data-tr="btn-back-home">الرجوع للرئيسية</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- SECTION 7: Host Closed Dashboard (Final summary, phone, checkout) -->
+            <section id="screen-host-closed" class="card fade-in">
+                <div class="card-header text-center closed-dashboard-header">
+                    <div class="success-icon-accent"><i class="fa-solid fa-circle-check"></i></div>
+                    <h2 data-tr="host-closed-title">تم إغلاق الأوردر بنجاح! 🍽️</h2>
+                    <p data-tr="host-closed-subtitle">إليك ملخص المكالمة لتطلب من مطعم ويشا ومتابعة حسابات الزملاء:</p>
+                </div>
+                
+                <div class="card-body closed-grid-layout">
+                    <!-- Right: Call Order Details -->
+                    <div class="call-details-panel">
+                        <div class="restaurant-call-card">
+                            <h3 data-tr="call-restaurant-header"><i class="fa-solid fa-phone-volume"></i> اتصل بالمطعم لتسجيل الطلب</h3>
+                            <div class="phone-number-area">
+                                <span class="phone-label" data-tr="restaurant-name-label">مطعم ويشا</span>
+                                <a href="tel:0123456789" class="phone-number" id="restaurant-phone-val">0123456789</a>
+                            </div>
+                            <p class="phone-note" data-tr="call-note">املهم الطلبات المجمعة التالية دفعة واحدة:</p>
+                        </div>
+                        
+                        <div class="aggregated-box">
+                            <div class="box-header">
+                                <span data-tr="grouped-items-title">الأصناف المجمعة للطلب:</span>
+                                <button class="btn btn-sm btn-secondary" onclick="copyAggregatedText()">
+                                    <i class="fa-solid fa-copy"></i> <span data-tr="btn-copy">نسخ الطلب المجمع</span>
+                                </button>
+                            </div>
+                            <div class="box-body" id="host-aggregated-final">
+                                <!-- Grouped items text -->
+                            </div>
+                        </div>
+
+                        <div class="personal-summary-box">
+                            <h4 data-tr="personal-order-header"><i class="fa-solid fa-user-tag"></i> طلبك الشخصي:</h4>
+                            <div id="host-personal-order-list">
+                                <!-- Host personal items -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Left: Coworkers Debts and Checkout Checklist -->
+                    <div class="payments-panel">
+                        <h3 class="section-title" data-tr="payments-tracker-title"><i class="fa-solid fa-wallet"></i> دفتر تحصيل الحسابات</h3>
+                        
+                        <!-- Collected progress bar -->
+                        <div class="collected-progress-card">
+                            <div class="progress-info">
+                                <span data-tr="collected-total-label">إجمالي المبلغ المحصل:</span>
+                                <span class="progress-val" id="payment-progress-label">0 / 0 EGP</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" id="payment-progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="debtors-table-container">
+                            <table class="debtors-table">
+                                <thead>
+                                    <tr>
+                                        <th data-tr="col-name">الزميل</th>
+                                        <th data-tr="col-order">الطلب</th>
+                                        <th data-tr="col-due">الحساب المطلـوب</th>
+                                        <th data-tr="col-status">الحالة</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="host-payments-tbody">
+                                    <!-- Dynamic rows of debtors -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <button class="btn btn-secondary btn-block mt-4" onclick="resetApp()">
+                            <i class="fa-solid fa-house"></i> <span data-tr="btn-back-home">بدء أوردر جديد بالكامل</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>&copy; 2026 اطلبلي - جميع الحقوق محفوظة لزملائنا المنسقين الجياع 🥯</p>
+        </footer>
+
+    </div>
+
+
+
+    <!-- Real-time Alert Modal for dynamic notifications -->
+    <div id="alert-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <i class="fa-solid fa-circle-exclamation modal-icon"></i>
+                <h3 id="alert-title">تنبيه!</h3>
+                <p id="alert-message">رسالة التنبيه</p>
+                <button class="btn btn-primary" onclick="closeAlertModal()">حسناً</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUPABASE JAVASCRIPT SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Core App JS -->
+    <script src="app.js"></script>
+</body>
+</html>
