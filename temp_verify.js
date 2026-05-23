@@ -156,28 +156,12 @@ const state = {
 
 // --- Application Initialization ---
 document.addEventListener("DOMContentLoaded", async () => {
-    try {
-        initLanguage();
-        loadCredentials();
-        setupLanguageSwitcher();
-        // IMPORTANT: await the session check so we don't show wrong screen
-        await checkUrlForSession();
-    } catch (e) {
-        console.error("[Otlobly] FATAL INIT ERROR:", e);
-        // Fallback: always show setup screen on any error
-        showScreen("screen-setup");
-    }
+    initLanguage();
+    loadCredentials();
+    setupLanguageSwitcher();
+    // IMPORTANT: await the session check so we don't show wrong screen
+    await checkUrlForSession();
 });
-
-// Safety net: if no screen is visible after 3 seconds, show setup
-setTimeout(() => {
-    const anyActive = document.querySelector("section.card.active-screen");
-    if (!anyActive) {
-        console.warn("[Otlobly] No screen active after 3s, showing setup as fallback");
-        const setup = document.getElementById("screen-setup");
-        if (setup) setup.classList.add("active-screen");
-    }
-}, 3000);
 
 // --- Language Controller & Translation Swapper ---
 function initLanguage() {
@@ -313,18 +297,12 @@ async function checkUrlForSession() {
         }
         
         if (state.supabase) {
-            // Show join screen with loading message
+            // Hide all screens first, show join screen with loading
             showScreen("screen-join");
-            const inviteEl = document.getElementById("join-invite-text");
-            if (inviteEl) inviteEl.innerHTML = "جاري تحميل بيانات الأوردر...";
+            document.getElementById("join-invite-text").innerHTML = "جاري تحميل بيانات الأوردر...";
             
-            try {
-                // Load session from Supabase
-                await loadSharedSession(sessionId);
-            } catch (err) {
-                console.error("[Otlobly] loadSharedSession failed:", err);
-                if (inviteEl) inviteEl.innerHTML = '<span style="color:#ff6b6b">حدث خطأ في تحميل الأوردر. حاول مرة أخرى.</span>';
-            }
+            // Load session from Supabase
+            await loadSharedSession(sessionId);
         } else {
             console.error("[Otlobly] Cannot connect to Supabase!");
             showScreen("screen-setup");
