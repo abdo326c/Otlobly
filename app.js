@@ -278,9 +278,12 @@ function closeConfig() {
 // --- Active Session Tracker (Host & Join Router) ---
 async function checkUrlForSession() {
     const urlParams = new URLSearchParams(window.location.search);
-    const sessionId = urlParams.get("session");
+    let sessionId = urlParams.get("session");
     
     if (sessionId && state.supabase) {
+        // Clean the session ID in case of trailing slashes from chat apps
+        sessionId = sessionId.replace(/[^a-zA-Z0-9-]/g, "");
+        
         // A session query exists, load it from Supabase
         await loadSharedSession(sessionId);
     }
@@ -331,6 +334,10 @@ async function loadSharedSession(sessionId) {
         }
     } catch (err) {
         console.error("Error loading session:", err);
+        showAlertModal(
+            state.currentLanguage === "ar" ? "خطأ في الجلسة" : "Session Error",
+            err.message
+        );
     }
 }
 
