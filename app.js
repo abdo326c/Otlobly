@@ -230,7 +230,7 @@ function initSupabase() {
     try {
         state.supabase = supabase.createClient(state.credentials.url, state.credentials.key);
         updateConnectionBadge(true);
-        showScreen("screen-setup");
+        // Do NOT show screen-setup here, checkUrlForSession will decide what screen to show.
     } catch (err) {
         console.error("Failed to connect to Supabase: ", err);
         updateConnectionBadge(false);
@@ -288,6 +288,9 @@ async function checkUrlForSession() {
         
         // A session query exists, load it from Supabase
         await loadSharedSession(sessionId);
+    } else {
+        // No session in URL, default to setup screen
+        showScreen("screen-setup");
     }
 }
 
