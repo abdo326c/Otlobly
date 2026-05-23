@@ -23,10 +23,19 @@ export default function HostDashboard({ session, coworkers, user, setUser }) {
     setTimeout(() => setCopying(false), 2000);
   };
 
+  const togglePayment = async (coworker) => {
+    const newStatus = coworker.status === 'paid' ? 'done' : 'paid';
+    // Update local state optimistic (or rely on realtime subscription)
+    // Actually the App.jsx realtime subscription is on `orders` so it will automatically update `coworkers`!
+    await supabase.from('orders').update({ status: newStatus }).eq('id', coworker.id);
+  };
+
   const aggregated = coworkers.reduce((acc, order) => {
     if (order.items) {
       order.items.forEach(item => {
-        acc[item.id] = (acc[item.id] || 0) + item.quantity;
+        if (!item.isNote) {
+          acc[item.id] = (acc[item.id] || 0) + item.quantity;
+        }
       });
     }
     return acc;
@@ -76,19 +85,43 @@ export default function HostDashboard({ session, coworkers, user, setUser }) {
                   <th style={{padding: '10px'}}>الزميل</th>
                   <th style={{padding: '10px'}}>الطلب</th>
                   <th style={{padding: '10px'}}>المطلوب</th>
+                  <th style={{padding: '10px'}}>الدفع</th>
                 </tr>
               </thead>
               <tbody>
                 {coworkers.map(cw => {
-                  const itemsTotal = (cw.items || []).reduce((s, i) => s + (i.price * i.quantity), 0);
+                  const itemsTotal = (cw.items || []).reduce((s, i) => s + ((i.price || 0) * (i.quantity || 0)), 0);
                   const due = (itemsTotal + parseFloat(deliveryPerPerson)).toFixed(2);
+                  const isPaid = cw.status === 'paid';
+                  const noteItem = (cw.items || []).find(i => i.isNote);
+                  
                   return (
-                    <tr key={cw.id} style={{borderBottom: '1px solid var(--border)'}}>
-                      <td style={{padding: '10px', fontWeight: 'bold'}}>{cw.coworker_name}</td>
+                    <tr key={cw.id} style={{
+                      borderBottom: '1px solid var(--border)',
+                      backgroundColor: isPaid ? 'rgba(76, 175, 80, 0.1)' : 'transparent',
+                      transition: 'background-color 0.3s'
+                    }}>
+                      <td style={{padding: '10px', fontWeight: 'bold'}}>
+                        {cw.coworker_name}
+                      </td>
                       <td style={{padding: '10px', fontSize: '0.85rem'}}>
-                        {(cw.items || []).map(i => `${i.quantity}x ${i.name_ar}`).join(', ')}
+                        {(cw.items || []).filter(i => !i.isNote).map(i => `${i.quantity}x ${i.name_ar}`).join(', ')}
+                        {noteItem && (
+                          <div style={{color: 'var(--accent)', marginTop: '4px', fontSize: '0.8rem'}}>
+                            <i className="fa-solid fa-note-sticky"></i> {noteItem.text}
+                          </div>
+                        )}
                       </td>
                       <td style={{padding: '10px', color: 'var(--accent)', fontWeight: 'bold'}}>{due}</td>
+                      <td style={{padding: '10px'}}>
+                        <button 
+                          className={`btn ${isPaid ? 'btn-outline' : 'btn-primary'}`} 
+                          style={{padding: '5px 10px', fontSize: '0.85rem', width: '100%'}}
+                          onClick={() => togglePayment(cw)}
+                        >
+                          {isPaid ? 'تراجع ↩️' : 'تسديد 💸'}
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
@@ -125,19 +158,28 @@ export default function HostDashboard({ session, coworkers, user, setUser }) {
 
         <h3 className="section-subtitle mt-4">حالة الزملاء المشتركين</h3>
         <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-          {coworkers.map(cw => (
-            <div key={cw.id} className={`status-box ${cw.status === 'done' ? 'status-done' : 'status-ordering'}`}>
-              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                <strong>{cw.coworker_name}</strong>
-                <span className="badge" style={{backgroundColor: cw.status === 'done' ? 'var(--accent)' : 'var(--bg-card)'}}>
-                  {cw.status === 'done' ? 'جاهز ✅' : 'بيطلب...'}
-                </span>
+          {coworkers.map(cw => {
+            const isDone = cw.status === 'done' || cw.status === 'paid';
+            const noteItem = (cw.items || []).find(i => i.isNote);
+            return (
+              <div key={cw.id} className={`status-box ${isDone ? 'status-done' : 'status-ordering'}`}>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                  <strong>{cw.coworker_name}</strong>
+                  <span className="badge" style={{backgroundColor: isDone ? 'var(--accent)' : 'var(--bg-card)'}}>
+                    {isDone ? 'جاهز ✅' : 'بيطلب...'}
+                  </span>
+                </div>
+                <div style={{fontSize: '0.85rem', marginTop: '5px'}}>
+                  {(cw.items || []).filter(i => !i.isNote).map(i => `${i.quantity}x ${i.name_ar}`).join(', ')}
+                </div>
+                {noteItem && (
+                  <div style={{color: 'var(--accent)', marginTop: '5px', fontSize: '0.85rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '5px'}}>
+                    <i className="fa-solid fa-note-sticky"></i> {noteItem.text}
+                  </div>
+                )}
               </div>
-              <div style={{fontSize: '0.85rem', marginTop: '5px'}}>
-                {(cw.items || []).map(i => `${i.quantity}x ${i.name_ar}`).join(', ')}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <h3 className="section-subtitle mt-4">تجميع الأوردر اللحظي</h3>

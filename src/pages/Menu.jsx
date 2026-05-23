@@ -4,6 +4,9 @@ import { APP_CONFIG } from '../data';
 
 export default function Menu({ session, user, cart, setCart, setUser }) {
   const [waiting, setWaiting] = useState(false);
+  const [note, setNote] = useState(() => {
+    return localStorage.getItem('otlobly_note') || '';
+  });
 
   const addToCart = async (item) => {
     const newCart = { ...cart, [item.id]: (cart[item.id] || 0) + 1 };
@@ -36,7 +39,21 @@ export default function Menu({ session, user, cart, setCart, setUser }) {
   };
 
   const finishOrder = async () => {
-    await supabase.from('orders').update({ status: 'done' }).eq('id', user.id);
+    // Before finishing, sync the cart ONE LAST TIME to include the final note
+    const finalItemsDb = Object.keys(cart).map(itemId => {
+      const itemDef = APP_CONFIG.restaurant.items.find(i => i.id === itemId);
+      return { id: itemId, name_ar: itemDef.name_ar, name_en: itemDef.name_en, price: itemDef.price, quantity: cart[itemId] };
+    });
+    
+    if (note.trim() !== '') {
+      finalItemsDb.push({ isNote: true, text: note.trim(), price: 0, quantity: 0, name_ar: 'ملحوظة' });
+      localStorage.setItem('otlobly_note', note);
+    } else {
+      localStorage.removeItem('otlobly_note');
+    }
+
+    await supabase.from('orders').update({ items: finalItemsDb, status: 'done' }).eq('id', user.id);
+    
     if (user.role === 'host') {
       setUser(prev => ({ ...prev, isOrdering: false }));
     } else {
@@ -99,6 +116,18 @@ export default function Menu({ session, user, cart, setCart, setUser }) {
                 <span>إجمالي الأصناف:</span>
                 <span style={{fontWeight: 'bold', color: 'var(--accent)'}}>{subtotal} EGP</span>
               </div>
+            </div>
+
+            <div className="form-group mt-4">
+              <label><i className="fa-solid fa-pen-to-square"></i> ملاحظات إضافية للمطعم (اختياري):</label>
+              <textarea 
+                className="form-control" 
+                rows="2" 
+                placeholder="مثال: الفول بدون زيت، الساندوتش حار..." 
+                value={note}
+                onChange={e => setNote(e.target.value)}
+                style={{resize: 'none'}}
+              ></textarea>
             </div>
 
             <button className="btn btn-primary btn-block mt-4" onClick={finishOrder}>
