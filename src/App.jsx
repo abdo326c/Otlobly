@@ -72,6 +72,35 @@ export default function App() {
     if (data) setCoworkers(data);
   };
 
+  // Fallback Polling & Visibility Change for Mobile Websocket Drops
+  useEffect(() => {
+    if (!session || session.status === 'closed') return;
+
+    const fetchSessionState = async () => {
+      const { data } = await supabase.from('sessions').select('*').eq('id', session.id).single();
+      if (data && data.status !== session.status) {
+        setSession(data);
+      }
+      fetchOrders();
+    };
+
+    // Poll every 10 seconds just in case
+    const interval = setInterval(fetchSessionState, 10000);
+
+    // Fetch immediately when the tab becomes visible again
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchSessionState();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [session?.id, session?.status]);
+
   const renderRoute = () => {
     if (session?.status === 'closed') {
       if (user.role === 'host') return <HostDashboard session={session} coworkers={coworkers} user={user} setUser={setUser} />;
