@@ -43,8 +43,13 @@ export default function Receipt({ session, user, coworkers }) {
           </div>
         </div>
 
-        <button className="btn btn-outline btn-block mt-4" onClick={() => window.location.href = '/'}>
-          الرجوع للرئيسية
+        <button className="btn btn-outline btn-block mt-4" onClick={() => {
+          localStorage.removeItem('otlobly_session');
+          localStorage.removeItem('otlobly_user');
+          localStorage.removeItem('otlobly_cart');
+          window.location.href = '/';
+        }}>
+          الرجوع للرئيسية / مسح البيانات
         </button>
       </div>
     </section>

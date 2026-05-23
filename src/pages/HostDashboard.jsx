@@ -2,12 +2,18 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { APP_CONFIG } from '../data';
 
-export default function HostDashboard({ session, coworkers, user }) {
+export default function HostDashboard({ session, coworkers, user, setUser }) {
   const [copying, setCopying] = useState(false);
 
   const closeSession = async () => {
-    if (!window.confirm("متأكد من قفل الأوردر وحساب التوصيل؟")) return;
-    await supabase.from('sessions').update({ status: 'closed' }).eq('id', session.id);
+    const feeStr = window.prompt("كم تكلفة التوصيل الإجمالية التي أخبرك بها المطعم؟ (بالجنيه)", "30");
+    if (feeStr === null) return; // User cancelled
+    
+    const fee = parseFloat(feeStr) || 0;
+    
+    if (!window.confirm(`سيتم قفل الأوردر وتقسيم مبلغ التوصيل (${fee} ج.م). هل أنت متأكد؟`)) return;
+    
+    await supabase.from('sessions').update({ status: 'closed', delivery_fee: fee }).eq('id', session.id);
   };
 
   const copyShareLink = () => {
@@ -90,7 +96,12 @@ export default function HostDashboard({ session, coworkers, user }) {
             </table>
           </div>
           
-          <button className="btn btn-outline btn-block mt-4" onClick={() => window.location.href = '/'}>بدء أوردر جديد</button>
+          <button className="btn btn-outline btn-block mt-4" onClick={() => {
+            localStorage.removeItem('otlobly_session');
+            localStorage.removeItem('otlobly_user');
+            localStorage.removeItem('otlobly_cart');
+            window.location.href = '/';
+          }}>بدء أوردر جديد / مسح البيانات</button>
         </div>
       </section>
     );
@@ -106,6 +117,10 @@ export default function HostDashboard({ session, coworkers, user }) {
       <div className="card-body">
         <button className="btn btn-outline btn-block" onClick={copyShareLink}>
           <i className="fa-solid fa-link"></i> {copying ? 'تم النسخ!' : 'نسخ رابط المشاركة للزملاء'}
+        </button>
+
+        <button className="btn btn-primary btn-block mt-3" onClick={() => setUser(prev => ({ ...prev, isOrdering: true }))} style={{backgroundColor: 'var(--accent)', color: '#fff'}}>
+          <i className="fa-solid fa-plus"></i> أضف طلبي الشخصي
         </button>
 
         <h3 className="section-subtitle mt-4">حالة الزملاء المشتركين</h3>

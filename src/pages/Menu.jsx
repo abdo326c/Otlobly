@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { APP_CONFIG } from '../data';
 
-export default function Menu({ session, user, cart, setCart }) {
+export default function Menu({ session, user, cart, setCart, setUser }) {
   const [waiting, setWaiting] = useState(false);
 
   const addToCart = async (item) => {
@@ -37,7 +37,11 @@ export default function Menu({ session, user, cart, setCart }) {
 
   const finishOrder = async () => {
     await supabase.from('orders').update({ status: 'done' }).eq('id', user.id);
-    setWaiting(true);
+    if (user.role === 'host') {
+      setUser(prev => ({ ...prev, isOrdering: false }));
+    } else {
+      setWaiting(true);
+    }
   };
 
   const subtotal = Object.keys(cart).reduce((sum, id) => {

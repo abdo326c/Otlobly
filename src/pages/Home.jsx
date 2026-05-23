@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Home({ setSession, setUser }) {
   const [hostName, setHostName] = useState('');
-  const [deliveryFee, setDeliveryFee] = useState(30);
   const [loading, setLoading] = useState(false);
   const [activeSessions, setActiveSessions] = useState([]);
   const navigate = useNavigate();
@@ -29,7 +28,7 @@ export default function Home({ setSession, setUser }) {
         .insert({
           host_name: hostName,
           restaurant_name: "ويشا (Wisha)",
-          delivery_fee: deliveryFee,
+          delivery_fee: 0,
           status: 'open'
         })
         .select().single();
@@ -78,13 +77,6 @@ export default function Home({ setSession, setUser }) {
             <div className="restaurant-badge-input">
               <i className="fa-solid fa-store"></i>
               <span className="restaurant-name-fixed">ويشا (Wisha)</span>
-            </div>
-          </div>
-          <div className="form-group">
-            <label>تكلفة التوصيل (ج.م):</label>
-            <div className="input-wrapper">
-              <input type="number" className="form-control" value={deliveryFee} onChange={e => setDeliveryFee(e.target.value)} required min="0" />
-              <span className="input-suffix">EGP</span>
             </div>
           </div>
           <button type="submit" className="btn btn-accent btn-block" disabled={loading}>

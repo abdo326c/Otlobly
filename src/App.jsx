@@ -12,11 +12,36 @@ export default function App() {
   const sessionId = searchParams.get('session');
   const navigate = useNavigate();
 
-  // Global State
-  const [session, setSession] = useState(null);
-  const [user, setUser] = useState({ id: null, role: null, name: null });
-  const [cart, setCart] = useState({});
+  // Global State with LocalStorage Initialization
+  const [session, setSession] = useState(() => {
+    const saved = localStorage.getItem('otlobly_session');
+    return saved ? JSON.parse(saved) : null;
+  });
+  
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem('otlobly_user');
+    return saved ? JSON.parse(saved) : { id: null, role: null, name: null, isOrdering: false };
+  });
+
+  const [cart, setCart] = useState(() => {
+    const saved = localStorage.getItem('otlobly_cart');
+    return saved ? JSON.parse(saved) : {};
+  });
+
   const [coworkers, setCoworkers] = useState([]);
+
+  // Persist State to LocalStorage
+  useEffect(() => {
+    if (session) localStorage.setItem('otlobly_session', JSON.stringify(session));
+  }, [session]);
+
+  useEffect(() => {
+    if (user.id) localStorage.setItem('otlobly_user', JSON.stringify(user));
+  }, [user]);
+
+  useEffect(() => {
+    localStorage.setItem('otlobly_cart', JSON.stringify(cart));
+  }, [cart]);
 
   // Subscriptions
   useEffect(() => {
@@ -49,23 +74,38 @@ export default function App() {
 
   const renderRoute = () => {
     if (session?.status === 'closed') {
-      if (user.role === 'host') return <HostDashboard session={session} coworkers={coworkers} user={user} />;
+      if (user.role === 'host') return <HostDashboard session={session} coworkers={coworkers} user={user} setUser={setUser} />;
       return <Receipt session={session} user={user} coworkers={coworkers} />;
     }
 
     if (user.role === 'host') {
-      return <HostDashboard session={session} coworkers={coworkers} user={user} />;
+      // If host wants to place an order, show them the Menu
+      if (user.isOrdering) {
+        return <Menu session={session} user={user} cart={cart} setCart={setCart} setUser={setUser} />;
+      }
+      return <HostDashboard session={session} coworkers={coworkers} user={user} setUser={setUser} />;
     }
 
     if (user.role === 'coworker') {
-      return <Menu session={session} user={user} cart={cart} setCart={setCart} />;
+      return <Menu session={session} user={user} cart={cart} setCart={setCart} setUser={setUser} />;
     }
 
     if (sessionId) {
-      return <Join sessionId={sessionId} setSession={setSession} setUser={setUser} />;
+      // If we already have a session locally matching the URL, skip Join and just rely on the roles above
+      if (session?.id === sessionId && user.id) {
+         // It will naturally fall through to the correct route based on role
+      } else {
+         return <Join sessionId={sessionId} setSession={setSession} setUser={setUser} />;
+      }
     }
 
-    return <Home setSession={setSession} setUser={setUser} />;
+    // Default to Home if no session exists or URL doesn't have a session
+    if (!session || !user.id) {
+        return <Home setSession={setSession} setUser={setUser} />;
+    }
+    
+    // If they have local state but no session in URL, redirect them to their session URL
+    navigate(`/?session=${session.id}`);
   };
 
   return (
