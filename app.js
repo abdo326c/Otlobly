@@ -155,11 +155,12 @@ const state = {
 };
 
 // --- Application Initialization ---
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     initLanguage();
     loadCredentials();
-    checkUrlForSession();
     setupLanguageSwitcher();
+    // IMPORTANT: await the session check so we don't show wrong screen
+    await checkUrlForSession();
 });
 
 // --- Language Controller & Translation Swapper ---
@@ -284,16 +285,28 @@ async function checkUrlForSession() {
     const urlParams = new URLSearchParams(window.location.search);
     let sessionId = urlParams.get("session");
     
-    if (sessionId && state.supabase) {
-        // Show join screen immediately to avoid user confusion during network delay
-        showScreen("screen-join");
-        document.getElementById("join-invite-text").innerHTML = "جاري تحميل بيانات الأوردر...";
-        
-        // Clean the session ID in case of trailing slashes from chat apps
+    console.log("[Otlobly] checkUrlForSession called. sessionId:", sessionId, "supabase ready:", !!state.supabase);
+    
+    if (sessionId) {
+        // Clean the session ID
         sessionId = sessionId.replace(/[^a-zA-Z0-9-]/g, "");
         
-        // A session query exists, load it from Supabase
-        await loadSharedSession(sessionId);
+        if (!state.supabase) {
+            console.error("[Otlobly] Supabase not initialized but session ID found! Trying to init...");
+            initSupabase();
+        }
+        
+        if (state.supabase) {
+            // Hide all screens first, show join screen with loading
+            showScreen("screen-join");
+            document.getElementById("join-invite-text").innerHTML = "جاري تحميل بيانات الأوردر...";
+            
+            // Load session from Supabase
+            await loadSharedSession(sessionId);
+        } else {
+            console.error("[Otlobly] Cannot connect to Supabase!");
+            showScreen("screen-setup");
+        }
     } else {
         // No session in URL, default to setup screen
         showScreen("screen-setup");
