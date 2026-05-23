@@ -17,6 +17,7 @@ export default function Join({ sessionId, setSession, setUser }) {
     setLoading(true);
     const { data, error } = await supabase.from('sessions').select('*').eq('id', sessionId).single();
     if (error || !data) {
+      console.error("[Join] Session fetch error:", error);
       setError('هذا الأوردر غير موجود أو تم حذفه.');
     } else {
       setSessionData(data);

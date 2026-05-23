@@ -9,23 +9,23 @@ import Receipt from './pages/Receipt';
 
 export default function App() {
   const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get('session');
+  let sessionId = searchParams.get('session');
+  if (sessionId) {
+    sessionId = sessionId.replace(/[^a-zA-Z0-9-]/g, "");
+  }
   const navigate = useNavigate();
 
   // Global State with LocalStorage Initialization
   const [session, setSession] = useState(() => {
-    const saved = localStorage.getItem('otlobly_session');
-    return saved ? JSON.parse(saved) : null;
+    try { const saved = localStorage.getItem('otlobly_session'); return saved ? JSON.parse(saved) : null; } catch { return null; }
   });
   
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('otlobly_user');
-    return saved ? JSON.parse(saved) : { id: null, role: null, name: null, isOrdering: false };
+    try { const saved = localStorage.getItem('otlobly_user'); return saved ? JSON.parse(saved) : { id: null, role: null, name: null, isOrdering: false }; } catch { return { id: null, role: null, name: null, isOrdering: false }; }
   });
 
   const [cart, setCart] = useState(() => {
-    const saved = localStorage.getItem('otlobly_cart');
-    return saved ? JSON.parse(saved) : {};
+    try { const saved = localStorage.getItem('otlobly_cart'); return saved ? JSON.parse(saved) : {}; } catch { return {}; }
   });
 
   const [coworkers, setCoworkers] = useState([]);
