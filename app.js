@@ -42,6 +42,7 @@ const TRANSLATIONS = {
         "cart-subtotal": "إجمالي الأصناف:",
         "cart-delivery-note": "التوصيل (مقسم بالعد):",
         "btn-finish": "خلصت الأوردر بتاعي ✅",
+        "btn-host-order": "أضف طلبي الشخصي",
         "waiting-host-msg": "تم حفظ طلبك! في انتظار المنسق ليقفل الأوردر ويحسب الحساب...",
         "btn-copy-link": "نسخ رابط المشاركة للزملاء",
         "coworkers-status-title": "حالة الزملاء المشتركين",
@@ -98,6 +99,7 @@ const TRANSLATIONS = {
         "cart-subtotal": "Items Total:",
         "cart-delivery-note": "Delivery (split equally):",
         "btn-finish": "I'm Done Ordering ✅",
+        "btn-host-order": "Place My Personal Order",
         "waiting-host-msg": "Your order is saved! Waiting for the host to close intake and calculate totals...",
         "btn-copy-link": "Copy Share Link for Coworkers",
         "coworkers-status-title": "Coworkers Status List",
@@ -627,10 +629,15 @@ async function handleFinishOrder() {
             
         if (error) throw error;
         
-        // Toggle UI ordering panel to waiting screen
-        document.getElementById("menu-items-container").style.pointerEvents = "none";
-        document.getElementById("btn-finish-order").style.display = "none";
-        document.getElementById("menu-waiting-status").style.display = "flex";
+        if (state.user.role === "host") {
+            // Host finished personal ordering, switch back to their dashboard
+            showScreen("screen-host-dashboard");
+        } else {
+            // Coworker finished, toggle UI ordering panel to waiting screen
+            document.getElementById("menu-items-container").style.pointerEvents = "none";
+            document.getElementById("btn-finish-order").style.display = "none";
+            document.getElementById("menu-waiting-status").style.display = "flex";
+        }
         
     } catch (err) {
         console.error("Finish order error:", err);
@@ -638,6 +645,25 @@ async function handleFinishOrder() {
 }
 
 // --- Host Dashboard Controller (Real-time tracking of coworkers) ---
+function openHostMenu() {
+    if (!state.session) return;
+    
+    // Setup Host Ordering Screen using their already created order record
+    document.getElementById("display-coworker-name").textContent = state.user.name + " (Host)";
+    document.getElementById("menu-restaurant-title").textContent = 
+        state.currentLanguage === "ar" ? "مطعم ويشا - قائمة الطعام" : "Wisha Restaurant - Menu";
+        
+    renderMenu();
+    updateCartUi();
+    
+    // Reset UI state in case they are re-opening it
+    document.getElementById("menu-waiting-status").style.display = "none";
+    document.getElementById("menu-items-container").style.pointerEvents = "auto";
+    document.getElementById("btn-finish-order").style.display = "flex";
+    
+    showScreen("screen-menu");
+}
+
 async function setupHostDashboard() {
     showScreen("screen-host-dashboard");
     
