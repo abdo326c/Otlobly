@@ -72,8 +72,7 @@ const TRANSLATIONS = {
         "drawer-help": "يرجى نسخ رابط الـ Project URL ومفتاح الـ Anon Key من لوحة تحكم Supabase الخاصة بك لتهيئة التطبيق.",
         "btn-save-credentials": "حفظ وتنشيط الاتصال",
         "sql-setup-header": "هل تحتاج لإنشاء الجداول؟",
-        "sql-setup-note": "لقد أنشأنا ملف setup_supabase.sql في مجلد المشروع، انسخه والصقه في الـ SQL Editor لتجهيز الجداول في ثوانٍ!",
-        "lobby-title": "أو انضم لأوردر مفتوح حالياً:"
+        "sql-setup-note": "لقد أنشأنا ملف setup_supabase.sql في مجلد المشروع، انسخه والصقه في الـ SQL Editor لتجهيز الجداول في ثوانٍ!"
     },
     en: {
         "app-title": "Otlobly",
@@ -130,8 +129,7 @@ const TRANSLATIONS = {
         "drawer-help": "Copy the Project URL and Anon Key from your Supabase dashboard project settings.",
         "btn-save-credentials": "Save & Activate Connection",
         "sql-setup-header": "Need to setup database?",
-        "sql-setup-note": "We created setup_supabase.sql in the project root directory. Copy and paste it in your Supabase SQL Editor!",
-        "lobby-title": "Or join an existing active order:"
+        "sql-setup-note": "We created setup_supabase.sql in the project root directory. Copy and paste it in your Supabase SQL Editor!"
     }
 };
 
@@ -285,10 +283,6 @@ async function checkUrlForSession() {
     let sessionId = urlParams.get("session");
     
     if (sessionId && state.supabase) {
-        // Show join screen immediately to avoid user confusion during network delay
-        showScreen("screen-join");
-        document.getElementById("join-invite-text").innerHTML = "جاري تحميل بيانات الأوردر...";
-        
         // Clean the session ID in case of trailing slashes from chat apps
         sessionId = sessionId.replace(/[^a-zA-Z0-9-]/g, "");
         
@@ -297,56 +291,6 @@ async function checkUrlForSession() {
     } else {
         // No session in URL, default to setup screen
         showScreen("screen-setup");
-        loadActiveLobby();
-    }
-}
-
-async function loadActiveLobby() {
-    if (!state.supabase) return;
-    try {
-        const { data, error } = await state.supabase
-            .from("sessions")
-            .select("*")
-            .eq("status", "open")
-            .order("created_at", { ascending: false });
-            
-        if (error) throw error;
-        
-        const lobbySection = document.getElementById("lobby-section");
-        const lobbyList = document.getElementById("lobby-list");
-        
-        if (data && data.length > 0) {
-            lobbySection.style.display = "block";
-            lobbyList.innerHTML = "";
-            
-            data.forEach(session => {
-                const btn = document.createElement("button");
-                btn.className = "btn btn-outline btn-block";
-                btn.style.textAlign = "right";
-                btn.style.display = "flex";
-                btn.style.justifyContent = "space-between";
-                btn.style.alignItems = "center";
-                
-                const title = state.currentLanguage === "ar" ? 
-                    `أوردر ${session.host_name} - ${session.restaurant_name}` : 
-                    `${session.host_name}'s Order - ${session.restaurant_name}`;
-                
-                btn.innerHTML = `
-                    <span><i class="fa-solid fa-users"></i> ${title}</span>
-                    <i class="fa-solid fa-arrow-left"></i>
-                `;
-                btn.onclick = () => {
-                    const joinUrl = \`\${window.location.origin}\${window.location.pathname}?session=\${session.id}\`;
-                    window.history.pushState({ path: joinUrl }, '', joinUrl);
-                    checkUrlForSession();
-                };
-                lobbyList.appendChild(btn);
-            });
-        } else {
-            lobbySection.style.display = "none";
-        }
-    } catch (err) {
-        console.error("Lobby fetch error:", err);
     }
 }
 
@@ -360,11 +304,12 @@ async function loadSharedSession(sessionId) {
             
         if (error || !data) {
             console.error("Session not found", error);
-            document.getElementById("join-invite-text").innerHTML = `<span style="color:red">خطأ: لا يمكن العثور على الأوردر. قد يكون محذوفاً.</span>`;
             showAlertModal(
                 state.currentLanguage === "ar" ? "جلسة غير موجودة" : "Session Expired",
                 state.currentLanguage === "ar" ? "عذراً، أوردر الفطار هذا غير موجود أو تم حذفه." : "Sorry, this breakfast order session was not found."
             );
+            window.history.replaceState({}, document.title, window.location.pathname);
+            showScreen("screen-setup");
             return;
         }
         
@@ -394,7 +339,6 @@ async function loadSharedSession(sessionId) {
         }
     } catch (err) {
         console.error("Error loading session:", err);
-        document.getElementById("join-invite-text").innerHTML = `<span style="color:red">خطأ في الاتصال: ${err.message}</span>`;
         showAlertModal(
             state.currentLanguage === "ar" ? "خطأ في الجلسة" : "Session Error",
             err.message
@@ -1131,7 +1075,6 @@ function resetApp() {
     
     // Go to setup screen
     showScreen("screen-setup");
-    loadActiveLobby();
 }
 
 // --- Alert Modal Controls ---

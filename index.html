@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- CSS File -->
-    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
     <!-- Floating Ambient Background Orbs -->
@@ -83,6 +83,15 @@
                             <span data-tr="btn-open-order">فتح الأوردر وبدء الاستقبال 🚀</span>
                         </button>
                     </form>
+
+                    <!-- Active Sessions Lobby -->
+                    <div class="lobby-section mt-4" id="lobby-section" style="display: none;">
+                        <hr style="margin-bottom: 15px; border: 0; border-top: 1px solid var(--border);">
+                        <h4 style="margin-bottom: 15px; font-size: 16px; color: var(--text);" data-tr="lobby-title">أو انضم لأوردر مفتوح حالياً:</h4>
+                        <div id="lobby-list" style="display: flex; flex-direction: column; gap: 10px;">
+                            <!-- Active sessions will be injected here -->
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -350,6 +359,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <!-- Core App JS -->
-    <script src="app.js?v=4"></script>
+    <script src="app.js?v=5"></script>
 </body>
 </html>
