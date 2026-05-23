@@ -135,7 +135,10 @@ const TRANSLATIONS = {
 const state = {
     currentLanguage: "ar", // default to Arabic
     supabase: null,
-    credentials: { url: "", key: "" },
+    credentials: { 
+        url: "https://dokvzfetsgxcdntdqrks.supabase.co", 
+        key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRva3Z6ZmV0c2d4Y2RudGRxcmtzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTE4OTgsImV4cCI6MjA5NTEyNzg5OH0.wBuLYz71k2BLa4cS7kU4X5EQrrCnLUHyzIp6i4vHzoA" 
+    },
     session: null,         // Active sessions record
     user: {
         role: "",          // 'host' or 'coworker'
@@ -217,40 +220,17 @@ function showScreen(screenId) {
 
 // --- Credentials & Connection Handler ---
 function loadCredentials() {
-    const savedUrl = localStorage.getItem("otlobly_sb_url");
-    const savedKey = localStorage.getItem("otlobly_sb_key");
-    
-    if (savedUrl && savedKey) {
-        state.credentials.url = savedUrl;
-        state.credentials.key = savedKey;
-        
-        document.getElementById("supabase-url").value = savedUrl;
-        document.getElementById("supabase-key").value = savedKey;
-        
-        initSupabase();
-    } else {
-        // Guard credentials needed view
-        showScreen("screen-credentials");
-        updateConnectionBadge(false);
-    }
+    // Credentials are hardcoded! Initialize connection immediately.
+    initSupabase();
 }
 
 function initSupabase() {
     try {
         state.supabase = supabase.createClient(state.credentials.url, state.credentials.key);
         updateConnectionBadge(true);
-        
-        // If we are currently on the credentials screen, proceed to home setup
-        const activeScreen = document.querySelector("section.card.active-screen");
-        if (activeScreen && activeScreen.id === "screen-credentials") {
-            showScreen("screen-setup");
-        }
+        showScreen("screen-setup");
     } catch (err) {
         console.error("Failed to connect to Supabase: ", err);
-        showAlertModal(
-            state.currentLanguage === "ar" ? "خطأ في الاتصال" : "Connection Error",
-            state.currentLanguage === "ar" ? "البيانات المدخلة غير صحيحة، يرجى التأكد من الـ URL والـ Key." : "Invalid details, please check your project URL and Key."
-        );
         updateConnectionBadge(false);
         showScreen("screen-credentials");
     }

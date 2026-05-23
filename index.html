@@ -36,21 +36,10 @@
             </div>
             
             <div class="header-controls">
-                <!-- Supabase Connection Indicator -->
-                <div id="connection-badge" class="badge badge-disconnected" onclick="openConfig()">
-                    <span class="dot"></span>
-                    <span id="badge-text" data-tr="status-disconnected">غير متصل بقاعدة البيانات</span>
-                </div>
-
                 <!-- Language Switcher -->
                 <button id="lang-switch" class="btn-icon" title="Switch Language">
                     <i class="fa-solid fa-language"></i>
                     <span class="lang-label">EN</span>
-                </button>
-
-                <!-- Configuration Trigger -->
-                <button class="btn-icon" onclick="openConfig()" title="إعدادات الاتصال">
-                    <i class="fa-solid fa-gear"></i>
                 </button>
             </div>
         </header>
@@ -58,28 +47,10 @@
         <!-- Dynamic Content Body -->
         <main class="app-main">
             
-            <!-- SECTION 1: Credentials Needed Guard -->
-            <section id="screen-credentials" class="card fade-in active-screen">
-                <div class="card-header text-center">
-                    <i class="fa-solid fa-shield-halved welcome-icon"></i>
-                    <h2 data-tr="welcome-title">أهلاً بك في اطلبلي! 👋</h2>
-                    <p data-tr="welcome-subtitle">تطبيق تجميع طلبات الفطار وتزامنها لحظياً مع زملائك.</p>
-                </div>
-                <div class="card-body">
-                    <div class="info-alert">
-                        <i class="fa-solid fa-circle-info"></i>
-                        <span data-tr="supabase-help">التطبيق يعمل بقاعدة بيانات Supabase الخاصة بك لخصوصية تامة وبدون تكاليف. يرجى إدخال إعدادات الاتصال الخاصة بمشروعك للبدء.</span>
-                    </div>
-                    
-                    <button class="btn btn-primary btn-block" onclick="openConfig()">
-                        <i class="fa-solid fa-plug"></i>
-                        <span data-tr="configure-now">تهيئة الاتصال بقاعدة البيانات</span>
-                    </button>
-                </div>
-            </section>
+
 
             <!-- SECTION 2: Setup Session Form (Host View) -->
-            <section id="screen-setup" class="card fade-in">
+            <section id="screen-setup" class="card fade-in active-screen">
                 <div class="card-header">
                     <h2 data-tr="setup-title"><i class="fa-solid fa-mug-hot"></i> افتح أوردر فطار جديد</h2>
                     <p data-tr="setup-subtitle">ابدأ جلسة فطار اليوم ودع زملائك يضيفون طلباتهم بأنفسهم!</p>
@@ -357,37 +328,7 @@
 
     </div>
 
-    <!-- CONFIGURATION DRAWER / MODAL -->
-    <div id="config-drawer" class="config-overlay">
-        <div class="config-drawer-container">
-            <div class="drawer-header">
-                <h3><i class="fa-solid fa-gears"></i> إعدادات اتصال Supabase</h3>
-                <button class="btn-icon" onclick="closeConfig()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="drawer-body">
-                <p class="drawer-note" data-tr="drawer-help">يرجى نسخ رابط الـ Project URL ومفتاح الـ Anon Key من لوحة تحكم Supabase الخاصة بك لتهيئة التطبيق.</p>
-                
-                <div class="form-group">
-                    <label for="supabase-url">Supabase Project URL:</label>
-                    <input type="text" id="supabase-url" class="form-control ltr-input" placeholder="https://xxxxxx.supabase.co">
-                </div>
-                
-                <div class="form-group">
-                    <label for="supabase-key">Supabase Anon Key:</label>
-                    <textarea id="supabase-key" class="form-control ltr-input" rows="4" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
-                </div>
-                
-                <button class="btn btn-accent btn-block" onclick="saveCredentials()">
-                    <i class="fa-solid fa-circle-check"></i> <span data-tr="btn-save-credentials">حفظ وتنشيط الاتصال</span>
-                </button>
-                
-                <div class="sql-link-card">
-                    <h4 data-tr="sql-setup-header">هل تحتاج لإنشاء الجداول؟</h4>
-                    <p data-tr="sql-setup-note">لقد أنشأنا ملف <a href="setup_supabase.sql" target="_blank" class="sql-link">setup_supabase.sql</a> في مجلد المشروع، انسخه والصقه في الـ SQL Editor لتجهيز الجداول في ثوانٍ!</p>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Real-time Alert Modal for dynamic notifications -->
     <div id="alert-modal" class="modal-overlay">
