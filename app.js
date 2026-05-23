@@ -336,7 +336,7 @@ async function loadActiveLobby() {
                     <i class="fa-solid fa-arrow-left"></i>
                 `;
                 btn.onclick = () => {
-                    const joinUrl = \`\${window.location.origin}\${window.location.pathname}?session=\${session.id}\`;
+                    const joinUrl = `${window.location.origin}${window.location.pathname}?session=${session.id}`;
                     window.history.pushState({ path: joinUrl }, '', joinUrl);
                     checkUrlForSession();
                 };
